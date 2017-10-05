@@ -11,12 +11,14 @@ app.use(cors());
 const rooms = [{
     id : '1',
     name : 'room1',
+    messages_count : 0,
     thumbnail : 'http://lorempixel.com/50/50/',
     thumbnail_width : 50,
     thumbnail_height : 50,
 },{
     id : '2',
     name : 'room2',
+    messages_count : 0,    
     thumbnail : 'http://lorempixel.com/50/50/',
     thumbnail_width : 50,
     thumbnail_height : 50
@@ -37,7 +39,11 @@ app.get('/get_rooms', (req,res)=>{
 app.post('/send_message',(req,res)=>{
     const message = req.body.message;
     const room = req.body.room;
-    ws_ref.send(JSON.stringify({message:{text: message, author:`anonym-${(new Date()).toDateString()}`, time:(new Date()).toDateString()}, room : room}));
+    wss.clients.forEach((client)=>{
+        if (client.readyState === ws.OPEN) {
+            client.send(JSON.stringify({message:{text: message, author:`anonym-${(new Date()).toDateString()}`, time:(new Date()).toISOString()}, room : room}));
+        }
+    })
     res.end();
 })
 app.listen(8080, 'localhost', ()=>{
